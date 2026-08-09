@@ -44,20 +44,26 @@ npm install
 npm run dev               # http://localhost:5173
 ```
 
-### Demo data (optional)
+### Demo data
 
-Run the backend with the `devdemo` profile for a seeded admin/owner/buyer and
-sample listings (all with password `Demo@1234`):
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=test,devdemo -Dspring-boot.run.useTestClasspath=true
-```
+The database ships with seed data (Flyway `V2__seed_demo_data.sql` runs on any
+environment: docker compose, local default profile): 9 users, 14 listings across
+8 cities, bookings, enquiries, and CRM notes. All accounts use password
+`Demo@1234`:
 
 | Role  | Mobile     | Password  |
 |-------|------------|-----------|
 | Admin | 9000000001 | Demo@1234 |
-| Owner | 9000000002 | Demo@1234 |
-| Buyer | 9000000003 | Demo@1234 |
+| Owner | 9000000011 | Demo@1234 |
+| Agent | 9000000021 | Demo@1234 |
+| Buyer | 9000000031 | Demo@1234 |
+
+For the local preview (H2, Flyway off), run the backend with the `devdemo`
+profile which seeds the same data:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=test,devdemo -Dspring-boot.run.useTestClasspath=true
+```
 
 ### Tests
 
