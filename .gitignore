@@ -1,0 +1,14 @@
+target/
+.mvn/wrapper/maven-wrapper.jar
+*.class
+.idea/
+*.iml
+.DS_Store
+application-local.yml
+
+# Freebuff app state (local database) - never commit
+.freebuff/
+
+# Review/share artifacts
+changed-files-bundle.zip
+*.bundle

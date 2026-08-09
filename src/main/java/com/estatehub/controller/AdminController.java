@@ -1,0 +1,30 @@
+package com.estatehub.controller;
+
+import com.estatehub.entity.Property;
+import com.estatehub.service.PropertyService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+// FR12: Admin and Compliance Management - Admin only
+@RestController
+@RequestMapping("/api/v1/admin")
+@RequiredArgsConstructor
+@PreAuthorize("hasRole('SUPER_ADMIN')")
+public class AdminController {
+
+    private final PropertyService propertyService;
+
+    @PutMapping("/properties/{id}/approve")
+    public ResponseEntity<Property> approveListing(@PathVariable UUID id) {
+        return ResponseEntity.ok(propertyService.approveListing(id));
+    }
+
+    @PutMapping("/properties/{id}/reject")
+    public ResponseEntity<Property> rejectListing(@PathVariable UUID id, @RequestBody String reason) {
+        return ResponseEntity.ok(propertyService.rejectListing(id, reason));
+    }
+}
