@@ -15,4 +15,5 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Optional<Booking> findByPropertyIdAndStatus(UUID propertyId, BookingStatus status);
     Optional<Booking> findByRazorpayOrderId(String razorpayOrderId);
     List<Booking> findByBuyerId(UUID buyerId);
+    List<Booking> findByBuyerIdOrderByCreatedAtDesc(UUID buyerId);
 }

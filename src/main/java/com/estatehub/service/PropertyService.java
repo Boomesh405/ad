@@ -103,6 +103,17 @@ public class PropertyService {
      * Whether the user owns the property or manages it as its listing agent.
      * Used by controllers/services for ownership-based authorization.
      */
+    /**
+     * Admin console: all listings, optionally filtered by status (e.g. PENDING_APPROVAL).
+     * Only exposed via AdminController (SUPER_ADMIN only).
+     */
+    @Transactional(readOnly = true)
+    public List<Property> listForAdmin(ListingStatus status) {
+        return status == null
+                ? propertyRepository.findAllByOrderByCreatedAtDesc()
+                : propertyRepository.findByListingStatusOrderByCreatedAtDesc(status);
+    }
+
     @Transactional(readOnly = true)
     public boolean isOwnerOrAgent(UUID propertyId, UUID userId) {
         return propertyRepository.findById(propertyId)

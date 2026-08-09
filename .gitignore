@@ -12,3 +12,6 @@ application-local.yml
 # Review/share artifacts
 changed-files-bundle.zip
 *.bundle
+
+# Dev server logs
+*.log

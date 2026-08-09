@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 // FR5: Booking and Token Payment
@@ -32,6 +33,13 @@ public class BookingController {
                                              @AuthenticationPrincipal JwtUtil.CurrentUser currentUser) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(bookingService.initiateBooking(propertyId, currentUser.userId(), tokenAmount, razorpayOrderId));
+    }
+
+    // FR5: Buyer's own bookings, newest first
+    @GetMapping("/mine")
+    @PreAuthorize("hasRole('BUYER_TENANT')")
+    public ResponseEntity<List<Booking>> myBookings(@AuthenticationPrincipal JwtUtil.CurrentUser currentUser) {
+        return ResponseEntity.ok(bookingService.getMyBookings(currentUser.userId()));
     }
 
     @PostMapping("/{id}/cancel")

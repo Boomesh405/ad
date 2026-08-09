@@ -16,5 +16,7 @@ public interface PropertyRepository extends JpaRepository<Property, UUID>, JpaSp
     List<Property> findByOwnerId(UUID ownerId);
     List<Property> findByAgentId(UUID agentId);
     Page<Property> findByListingStatus(ListingStatus status, Pageable pageable);
+    List<Property> findByListingStatusOrderByCreatedAtDesc(ListingStatus status);
+    List<Property> findAllByOrderByCreatedAtDesc();
     List<Property> findByCityIgnoreCaseAndListingStatus(String city, ListingStatus status);
 }

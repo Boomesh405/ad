@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -76,6 +77,11 @@ public class BookingService {
 
         // TODO: generate booking slip PDF, send SMS/email confirmation, notify owner+agent
         return booking;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Booking> getMyBookings(UUID buyerId) {
+        return bookingRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId);
     }
 
     @Transactional
