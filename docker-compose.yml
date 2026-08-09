@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: estatehub_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-estatehub_dev_password}
+      POSTGRES_DB: estatehub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U estatehub_user -d estatehub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"   # optional: exposed for local tooling; remove for production
+
+  backend:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/estatehub
+      DB_USERNAME: estatehub_user
+      DB_PASSWORD: ${DB_PASSWORD:-estatehub_dev_password}
+      JWT_SECRET: ${JWT_SECRET:-CHANGE_ME_to_a_random_secret_at_least_64_bytes_long_for_HS512!!}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+      DIGIO_WEBHOOK_SECRET: ${DIGIO_WEBHOOK_SECRET:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8090:8080"   # direct API + Swagger access
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"     # the web app (proxies /api to backend)
+
+volumes:
+  pgdata:

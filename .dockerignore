@@ -1,0 +1,8 @@
+target
+.git
+.freebuff
+frontend/node_modules
+frontend/dist
+*.log
+*.bundle
+changed-files-bundle.zip

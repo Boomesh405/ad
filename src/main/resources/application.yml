@@ -6,7 +6,7 @@ spring:
     name: estatehub-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/estatehub
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/estatehub}
     username: ${DB_USERNAME:estatehub_user}
     password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver

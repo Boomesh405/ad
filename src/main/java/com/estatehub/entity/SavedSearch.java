@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -25,8 +27,11 @@ public class SavedSearch {
     @Column(name = "buyer_id", nullable = false)
     private UUID buyerId;
 
-    @Column(name = "search_criteria", columnDefinition = "TEXT", nullable = false)
-    private String searchCriteria; // JSONB
+    // The DB column is JSONB (V1__init_schema.sql); bind the String as JSON so
+    // Hibernate ddl-auto validate accepts the mapping and writes are valid JSON.
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "search_criteria", columnDefinition = "jsonb", nullable = false)
+    private String searchCriteria;
 
     @Column(name = "last_notified_at")
     private LocalDateTime lastNotifiedAt;
