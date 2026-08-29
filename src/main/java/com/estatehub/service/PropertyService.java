@@ -1,7 +1,9 @@
 package com.estatehub.service;
 
 import com.estatehub.dto.PropertySearchCriteria;
+import com.estatehub.dto.DocumentUploadRequest;
 import com.estatehub.entity.Property;
+import com.estatehub.entity.PropertyDocument;
 import com.estatehub.entity.User;
 import com.estatehub.entity.enums.ListingStatus;
 import com.estatehub.entity.enums.PossessionStatus;
@@ -10,6 +12,7 @@ import com.estatehub.exception.AgentKycIncompleteException;
 import com.estatehub.exception.InsufficientPhotosException;
 import com.estatehub.exception.ReraRequiredException;
 import com.estatehub.exception.ResourceNotFoundException;
+import com.estatehub.repository.PropertyDocumentRepository;
 import com.estatehub.repository.PropertyMediaRepository;
 import com.estatehub.repository.PropertyRepository;
 import com.estatehub.repository.UserRepository;
@@ -36,6 +39,7 @@ public class PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final PropertyMediaRepository propertyMediaRepository;
+    private final PropertyDocumentRepository propertyDocumentRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -54,6 +58,7 @@ public class PropertyService {
             throw new ReraRequiredException("RERA registration number required for under-construction properties");
         }
 
+        property.setOwnerId(creatorUserId);
         property.setListingStatus(ListingStatus.PENDING_APPROVAL);
         return propertyRepository.save(property);
     }
@@ -129,6 +134,35 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
+    @Transactional
+    public PropertyDocument uploadDocument(UUID propertyId, UUID userId, DocumentUploadRequest request) {
+        Property property = getById(propertyId);
+
+        // Only the owner or listing agent can upload documents
+        if (!property.getOwnerId().equals(userId)
+                && (property.getAgentId() == null || !property.getAgentId().equals(userId))) {
+            throw new AccessDeniedException("Only the property owner or agent can upload documents");
+        }
+
+        PropertyDocument doc = PropertyDocument.builder()
+                .propertyId(propertyId)
+                .uploadedBy(userId)
+                .docType(request.getDocType())
+                .docName(request.getDocName())
+                .fileUrl(request.getFileUrl())
+                .fileSizeBytes(request.getFileSizeBytes())
+                .verified(false)
+                .build();
+        return propertyDocumentRepository.save(doc);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PropertyDocument> getDocuments(UUID propertyId) {
+        // Verify property exists
+        getById(propertyId);
+        return propertyDocumentRepository.findByPropertyIdOrderByCreatedAtAsc(propertyId);
+    }
+
     @Transactional(readOnly = true)
     public Page<Property> search(PropertySearchCriteria criteria) {
         Specification<Property> spec = buildSpecification(criteria);
@@ -171,6 +205,9 @@ public class PropertyService {
             }
             if (c.getPossessionStatus() != null) {
                 predicates.add(cb.equal(root.get("possessionStatus"), c.getPossessionStatus()));
+            }
+            if (c.getListingType() != null) {
+                predicates.add(cb.equal(root.get("listingType"), c.getListingType()));
             }
             if (c.getCity() != null && !c.getCity().isBlank()) {
                 predicates.add(cb.equal(cb.lower(root.get("city")), c.getCity().toLowerCase()));

@@ -1,8 +1,10 @@
 package com.estatehub.controller;
 
 import com.estatehub.config.JwtUtil;
+import com.estatehub.dto.DocumentUploadRequest;
 import com.estatehub.dto.PropertySearchCriteria;
 import com.estatehub.entity.Property;
+import com.estatehub.entity.PropertyDocument;
 import com.estatehub.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -55,5 +58,22 @@ public class PropertyController {
     public ResponseEntity<Property> activate(@PathVariable UUID id,
                                               @AuthenticationPrincipal JwtUtil.CurrentUser currentUser) {
         return ResponseEntity.ok(propertyService.activateListing(id, currentUser.userId(), currentUser.isSuperAdmin()));
+    }
+
+    // Owner/Agent: upload property document (title deed, tax receipt, etc.)
+    @PostMapping("/{id}/documents")
+    @PreAuthorize("hasAnyRole('BUILDER_OWNER', 'AGENT')")
+    public ResponseEntity<PropertyDocument> uploadDocument(
+            @PathVariable UUID id,
+            @Valid @RequestBody DocumentUploadRequest request,
+            @AuthenticationPrincipal JwtUtil.CurrentUser currentUser) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(propertyService.uploadDocument(id, currentUser.userId(), request));
+    }
+
+    // Public: list documents for a property
+    @GetMapping("/{id}/documents")
+    public ResponseEntity<List<PropertyDocument>> getDocuments(@PathVariable UUID id) {
+        return ResponseEntity.ok(propertyService.getDocuments(id));
     }
 }

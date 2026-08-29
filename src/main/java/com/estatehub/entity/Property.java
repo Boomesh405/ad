@@ -1,6 +1,7 @@
 package com.estatehub.entity;
 
 import com.estatehub.entity.enums.ListingStatus;
+import com.estatehub.entity.enums.ListingType;
 import com.estatehub.entity.enums.PossessionStatus;
 import com.estatehub.entity.enums.PropertyType;
 import jakarta.persistence.*;
@@ -14,6 +15,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -42,6 +45,11 @@ public class Property {
     @Enumerated(EnumType.STRING)
     @Column(name = "property_type", nullable = false, length = 30)
     private PropertyType propertyType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "listing_type", nullable = false, length = 20)
+    @Builder.Default
+    private ListingType listingType = ListingType.FOR_SALE;
 
     @Column(name = "bhk_config", length = 20)
     private String bhkConfig;
@@ -101,6 +109,18 @@ public class Property {
     @CollectionTable(name = "property_amenities", joinColumns = @JoinColumn(name = "property_id"))
     @Column(name = "amenity")
     private java.util.List<String> amenities;
+
+    // Photo/video gallery from property_media. Eager so the API returns media
+    // with every property (search cards + detail page) without extra lookups.
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "property_id")
+    private List<PropertyMedia> media = new ArrayList<>();
+
+    // Owner-uploaded documents (title deed, tax receipt, floor plan, etc.)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_id")
+    @Builder.Default
+    private List<PropertyDocument> documents = new ArrayList<>();
 
     // Mandatory for under-construction listings per RERA Act 2016 (SRS 2.5, Appendix C)
     @Column(name = "rera_number", length = 50)

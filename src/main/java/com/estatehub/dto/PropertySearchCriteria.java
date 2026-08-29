@@ -1,5 +1,6 @@
 package com.estatehub.dto;
 
+import com.estatehub.entity.enums.ListingType;
 import com.estatehub.entity.enums.PossessionStatus;
 import com.estatehub.entity.enums.PropertyType;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class PropertySearchCriteria {
     private BigDecimal maxPrice;
     private Double minCarpetArea;
     private Double maxCarpetArea;
+    private ListingType listingType;
     private PossessionStatus possessionStatus;
     private String city;
     private String pincode;

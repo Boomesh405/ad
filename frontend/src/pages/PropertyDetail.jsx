@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api, money, getUser } from "../api.js";
 
+const DOC_LABELS = {
+  TITLE_DEED: "📜 Title Deed",
+  TAX_RECEIPT: "🧾 Tax Receipt",
+  ENCUMBRANCE_CERT: "📋 Encumbrance Certificate",
+  FLOOR_PLAN: "📐 Floor Plan",
+  APPROVAL_PLAN: "✅ Approval Plan",
+  OTHER: "📄 Other Document",
+};
+
 export default function PropertyDetail() {
   const { id } = useParams();
   const [p, setP] = useState(null);
@@ -12,6 +21,7 @@ export default function PropertyDetail() {
   const [booking, setBooking] = useState(null);
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [documents, setDocuments] = useState([]);
   const user = getUser();
 
   useEffect(() => {
@@ -24,6 +34,10 @@ export default function PropertyDetail() {
           setP(d);
           // Fire-and-forget view counter
           api(`/properties/${id}/view`, { method: "POST", auth: false }).catch(() => {});
+          // Load documents
+          api(`/properties/${id}/documents`, { auth: false })
+            .then((docs) => alive && setDocuments(docs))
+            .catch(() => {});
         }
       })
       .catch((e) => alive && setError(e.message))
@@ -107,12 +121,38 @@ export default function PropertyDetail() {
           </p>
         </div>
         <div className="detail-price">
-          <div className="price">{money(p.price)}</div>
+          {p.listingType === "FOR_RENT" ? (
+            <>
+              <div className="price">{money(p.monthlyRent)}/mo</div>
+              <span className="badge rent">FOR RENT</span>
+            </>
+          ) : (
+            <>
+              <div className="price">{money(p.price)}</div>
+              <span className="badge sale">FOR SALE</span>
+            </>
+          )}
           <span className={`badge ${p.listingStatus === "ACTIVE" ? "live" : p.listingStatus.toLowerCase()}`}>
             {p.listingStatus.replace("_", " ")}
           </span>
         </div>
       </div>
+
+      {p.media?.length > 0 && (
+        <div className="gallery">
+          {p.media
+            .filter((m) => m.mediaType === "PHOTO")
+            .map((m, i) => (
+              <img
+                key={m.mediaId || i}
+                src={m.s3Key}
+                alt={m.altText || p.title}
+                className={`gallery-img${m.coverPhoto ? " cover" : ""}`}
+                loading="lazy"
+              />
+            ))}
+        </div>
+      )}
 
       <div className="detail-grid">
         <div className="card spec-card">
@@ -137,6 +177,23 @@ export default function PropertyDetail() {
               </div>
             </>
           )}
+          {documents.length > 0 && (
+            <>
+              <h2>Property Documents</h2>
+              <div className="doc-list">
+                {documents.map((doc) => (
+                  <div key={doc.documentId} className="doc-item">
+                    <span className="doc-type">{DOC_LABELS[doc.docType] || doc.docType}</span>
+                    <span className="doc-name">{doc.docName}</span>
+                    {doc.verified && <span className="badge live">Verified</span>}
+                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="doc-link">
+                      View ↗
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
           {canManage && (
             <button className="btn block" onClick={activate} disabled={busy}>
               Activate listing
@@ -145,8 +202,14 @@ export default function PropertyDetail() {
         </div>
 
         <div className="card book-card">
-          <h2>{user?.role === "BUYER_TENANT" ? "Book this property" : "Interested in this property?"}</h2>
-          {user?.role === "BUYER_TENANT" ? (
+          <h2>{p.listingType === "FOR_RENT" ? "Rent this property" : user?.role === "BUYER_TENANT" ? "Book this property" : "Interested in this property?"}</h2>
+          {p.listingType === "FOR_RENT" ? (
+            <div className="muted">
+              <p>Monthly rent: <strong>{money(p.monthlyRent)}</strong></p>
+              <p>Contact the owner to arrange a rental agreement.</p>
+              {!user && <p>Log in as a buyer to express interest.</p>}
+            </div>
+          ) : user?.role === "BUYER_TENANT" ? (
             <form onSubmit={book}>
               <label>
                 Token amount (₹)

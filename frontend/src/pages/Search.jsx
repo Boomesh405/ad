@@ -1,143 +1,143 @@
-import { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { useState, useEffect } from "react";
+import { api, money } from "../api.js";
 import PropertyCard from "../components/PropertyCard.jsx";
 
-const PROPERTY_TYPES = [
-  "APARTMENT",
-  "VILLA",
-  "INDEPENDENT_HOUSE",
-  "PLOT",
-  "OFFICE_SPACE",
-  "RETAIL",
-  "WAREHOUSE",
-];
-const POSSESSION = ["READY_TO_MOVE", "UNDER_CONSTRUCTION"];
-const SORTS = [
-  ["", "Newest first"],
-  ["PRICE_ASC", "Price: low to high"],
-  ["PRICE_DESC", "Price: high to low"],
-  ["AREA", "Largest area"],
-];
-
 export default function Search() {
-  const [filters, setFilters] = useState({
-    keyword: "",
-    city: "",
-    propertyType: "",
-    minPrice: "",
-    maxPrice: "",
-    possessionStatus: "",
-    sortBy: "",
-  });
+  const [keyword, setKeyword] = useState("");
+  const [city, setCity] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+  const [listingTab, setListingTab] = useState("ALL"); // ALL | FOR_SALE | FOR_RENT
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [possession, setPossession] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [results, setResults] = useState(null);
   const [page, setPage] = useState(0);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [saleCount, setSaleCount] = useState(0);
+  const [rentCount, setRentCount] = useState(0);
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    setError("");
-    api("/properties/search", {
-      auth: false,
-      params: {
-        keyword: filters.keyword || undefined,
-        city: filters.city || undefined,
-        propertyType: filters.propertyType || undefined,
-        minPrice: filters.minPrice || undefined,
-        maxPrice: filters.maxPrice || undefined,
-        possessionStatus: filters.possessionStatus || undefined,
-        sortBy: filters.sortBy || undefined,
-        page,
-        size: 12,
-      },
-    })
-      .then((d) => alive && setResult(d))
-      .catch((e) => alive && setError(e.message))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [filters, page]);
+  async function search(p = 0, listingOverride) {
+    const activeListing = listingOverride !== undefined ? listingOverride : listingTab;
+    const params = { page: p, size: 20 };
+    if (keyword) params.keyword = keyword;
+    if (city) params.city = city;
+    if (propertyType) params.propertyType = propertyType;
+    if (activeListing && activeListing !== "ALL") params.listingType = activeListing;
+    if (minPrice) params.minPrice = minPrice;
+    if (maxPrice) params.maxPrice = maxPrice;
+    if (possession) params.possessionStatus = possession;
+    if (sortBy) params.sortBy = sortBy;
+    try {
+      const data = await api("/properties/search", { params });
+      setResults(data.content);
+      setTotalPages(data.totalPages);
+      setPage(p);
+    } catch (e) {
+      setResults([]);
+    }
+  }
 
-  const set = (k) => (e) => setFilters((f) => ({ ...f, [k]: e.target.value }));
-  const content = result?.content || [];
+  // Fetch sale + rent counts for tab badges
+  async function fetchCounts() {
+    try {
+      const [saleData, rentData] = await Promise.all([
+        api("/properties/search", { params: { page: 0, size: 1, listingType: "FOR_SALE" } }),
+        api("/properties/search", { params: { page: 0, size: 1, listingType: "FOR_RENT" } }),
+      ]);
+      setSaleCount(saleData.totalElements || 0);
+      setRentCount(rentData.totalElements || 0);
+    } catch (_) {}
+  }
+
+  useEffect(() => { search(0); fetchCounts(); }, []);
+
+  function switchTab(tab) {
+    setListingTab(tab);
+    search(0, tab);
+  }
 
   return (
     <div>
-      <div className="hero">
-        <h1>Find your next home</h1>
-        <p className="muted">
-          Search ready-to-move and under-construction properties across India.
-        </p>
+      <h1>Find your next home</h1>
+      <p className="muted">Search ready-to-move and under-construction properties across India.</p>
+
+      {/* Sale / Rent tabs */}
+      <div className="listing-tabs">
+        <button
+          className={`listing-tab ${listingTab === "ALL" ? "active" : ""}`}
+          onClick={() => switchTab("ALL")}
+        >
+          All Properties
+        </button>
+        <button
+          className={`listing-tab sale ${listingTab === "FOR_SALE" ? "active" : ""}`}
+          onClick={() => switchTab("FOR_SALE")}
+        >
+          <span className="tab-icon">🏠</span> For Sale
+          <span className="tab-count">{saleCount}</span>
+        </button>
+        <button
+          className={`listing-tab rent ${listingTab === "FOR_RENT" ? "active" : ""}`}
+          onClick={() => switchTab("FOR_RENT")}
+        >
+          <span className="tab-icon">🔑</span> For Rent
+          <span className="tab-count">{rentCount}</span>
+        </button>
       </div>
 
-      <form
-        className="card filters"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setPage(0);
-        }}
-      >
-        <input placeholder="Keyword (title / city / landmark)" value={filters.keyword} onChange={set("keyword")} />
-        <input placeholder="City" value={filters.city} onChange={set("city")} />
-        <select value={filters.propertyType} onChange={set("propertyType")}>
-          <option value="">All types</option>
-          {PROPERTY_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t.replace("_", " ")}
-            </option>
-          ))}
-        </select>
-        <input placeholder="Min price ₹" type="number" min="0" value={filters.minPrice} onChange={set("minPrice")} />
-        <input placeholder="Max price ₹" type="number" min="0" value={filters.maxPrice} onChange={set("maxPrice")} />
-        <select value={filters.possessionStatus} onChange={set("possessionStatus")}>
-          <option value="">Any possession</option>
-          {POSSESSION.map((p) => (
-            <option key={p} value={p}>
-              {p.replace("_", " ")}
-            </option>
-          ))}
-        </select>
-        <select value={filters.sortBy} onChange={set("sortBy")}>
-          {SORTS.map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <button className="btn">Search</button>
-      </form>
+      <div className="search-filters card">
+        <div className="filter-grid">
+          <input placeholder="Keyword (title / city / landmark)" value={keyword} onChange={e => setKeyword(e.target.value)} />
+          <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
+          <select value={propertyType} onChange={e => setPropertyType(e.target.value)}>
+            <option value="">All types</option>
+            <option value="APARTMENT">APARTMENT</option>
+            <option value="VILLA">VILLA</option>
+            <option value="INDEPENDENT_HOUSE">INDEPENDENT HOUSE</option>
+            <option value="PLOT">PLOT</option>
+            <option value="OFFICE_SPACE">OFFICE SPACE</option>
+            <option value="RETAIL">RETAIL</option>
+            <option value="WAREHOUSE">WAREHOUSE</option>
+          </select>
+          <input type="number" placeholder="Min price ₹" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
+          <input type="number" placeholder="Max price ₹" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
+          <select value={possession} onChange={e => setPossession(e.target.value)}>
+            <option value="">Any possession</option>
+            <option value="READY_TO_MOVE">READY TO MOVE</option>
+            <option value="UNDER_CONSTRUCTION">UNDER CONSTRUCTION</option>
+          </select>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+            <option value="">Newest first</option>
+            <option value="PRICE_ASC">Price: low to high</option>
+            <option value="PRICE_DESC">Price: high to low</option>
+            <option value="AREA">Largest area</option>
+          </select>
+        </div>
+        <button className="btn" onClick={() => search(0)}>Search</button>
+      </div>
 
-      {error && <div className="alert error">{error}</div>}
-      {loading && <p className="muted">Loading…</p>}
-      {!loading && !error && content.length === 0 && (
-        <div className="empty card">No properties match your search.</div>
-      )}
-      {!loading && content.length > 0 && (
-        <div className="grid">
-          {content.map((p) => (
-            <PropertyCard key={p.propertyId} property={p} />
-          ))}
-        </div>
-      )}
-      {result && result.totalPages > 1 && (
-        <div className="pagination">
-          <button className="btn ghost" disabled={page === 0} onClick={() => setPage(page - 1)}>
-            ‹ Prev
-          </button>
-          <span>
-            Page {page + 1} of {result.totalPages}
-          </span>
-          <button
-            className="btn ghost"
-            disabled={page >= result.totalPages - 1}
-            onClick={() => setPage(page + 1)}
-          >
-            Next ›
-          </button>
-        </div>
-      )}
+      <div className="results">
+        {results === null ? (
+          <p className="muted">Loading…</p>
+        ) : results.length === 0 ? (
+          <div className="empty card">No properties match your filters. Try broadening your search.</div>
+        ) : (
+          <>
+            <p className="muted">{results.length} properties found</p>
+            <div className="prop-grid">
+              {results.map(p => <PropertyCard key={p.propertyId} property={p} />)}
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button className="btn ghost" disabled={page === 0} onClick={() => search(page - 1)}>← Prev</button>
+                <span className="muted">Page {page + 1} of {totalPages}</span>
+                <button className="btn ghost" disabled={page >= totalPages - 1} onClick={() => search(page + 1)}>Next →</button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

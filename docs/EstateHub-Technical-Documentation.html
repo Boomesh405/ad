@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EstateHub — Technical Documentation</title>
+<style>
+  @page { margin: 2cm; size: A4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; line-height: 1.7; color: #1a1a2e; background: #fff; max-width: 900px; margin: 0 auto; padding: 40px; }
+  h1 { font-size: 2.4em; color: #0f3460; border-bottom: 3px solid #e94560; padding-bottom: 12px; margin: 40px 0 20px; page-break-after: avoid; }
+  h2 { font-size: 1.6em; color: #16213e; margin: 35px 0 15px; border-left: 4px solid #e94560; padding-left: 12px; page-break-after: avoid; }
+  h3 { font-size: 1.2em; color: #0f3460; margin: 25px 0 10px; }
+  h4 { font-size: 1em; color: #333; margin: 15px 0 8px; }
+  p { margin: 8px 0; text-align: justify; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; }
+  th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+  th { background: #0f3460; color: #fff; font-weight: 600; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.9em; }
+  pre { background: #1a1a2e; color: #e0e0e0; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.85em; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .cover { text-align: center; padding: 80px 20px; page-break-after: always; }
+  .cover h1 { font-size: 3em; border: none; color: #e94560; }
+  .cover .subtitle { font-size: 1.3em; color: #555; margin-top: 10px; }
+  .cover .meta { margin-top: 40px; color: #777; font-size: 0.95em; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; margin: 2px; }
+  .badge-ok { background: #d4edda; color: #155724; }
+  .badge-info { background: #d1ecf1; color: #0c5460; }
+  .badge-warn { background: #fff3cd; color: #856404; }
+  .arch-diagram { background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 15px 0; text-align: center; font-family: monospace; white-space: pre; line-height: 1.4; font-size: 0.85em; }
+  ul, ol { margin: 8px 0 8px 24px; }
+  li { margin: 4px 0; }
+  .page-break { page-break-before: always; }
+  .toc { page-break-after: always; }
+  .toc a { text-decoration: none; color: #0f3460; }
+  .toc li { margin: 6px 0; }
+  .highlight { background: #fff3cd; padding: 12px; border-left: 4px solid #ffc107; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .note { background: #d1ecf1; padding: 12px; border-left: 4px solid #17a2b8; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .section { margin-bottom: 40px; }
+  @media print {
+    body { padding: 0; }
+    .page-break { page-break-before: always; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <h1>🏘️ EstateHub</h1>
+  <div class="subtitle">Real-Estate Property Management & Transaction Platform</div>
+  <div class="subtitle" style="font-size:1em; margin-top:5px;">Technical Documentation</div>
+  <div class="meta">
+    <p><strong>Version:</strong> 1.0.0</p>
+    <p><strong>Date:</strong> August 2026</p>
+    <p><strong>Repository:</strong> github.com/Boomesh405/ad</p>
+    <p><strong>Stack:</strong> Spring Boot 3.3 · PostgreSQL 16 · React 19 · Docker</p>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h1>Table of Contents</h1>
+  <ol style="font-size:1.05em; line-height:2;">
+    <li><a href="#overview">Project Overview</a></li>
+    <li><a href="#architecture">System Architecture</a></li>
+    <li><a href="#tech-stack">Technology Stack</a></li>
+    <li><a href="#database">Database Design</a></li>
+    <li><a href="#auth">Authentication & Authorization</a></li>
+    <li><a href="#api">REST API Reference</a></li>
+    <li><a href="#frontend">Frontend Architecture</a></li>
+    <li><a href="#webhooks">Webhook Integrations</a></li>
+    <li><a href="#deployment">Deployment</a></li>
+    <li><a href="#testing">Testing Strategy</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#seed-data">Seed Data & Demo</a></li>
+    <li><a href="#config">Configuration</a></li>
+    <li><a href="#future">Future Enhancements</a></li>
+  </ol>
+</div>
+
+<!-- 1. PROJECT OVERVIEW -->
+<div class="section page-break" id="overview">
+  <h1>1. Project Overview</h1>
+  <p>EstateHub is a full-stack real-estate property management and transaction platform designed for the Indian market. It enables property owners/agents to list properties, buyers/tenants to search and book properties, and administrators to moderate listings — all with integrated payments (Razorpay) and digital agreement signing (Digio).</p>
+
+  <h3>Core Features</h3>
+  <ul>
+    <li><strong>Property Listings:</strong> Create, search, and browse properties with advanced filters (city, type, price, possession status, listing type for sale/rent)</li>
+    <li><strong>Role-Based Access Control:</strong> Four distinct roles — Super Admin, Builder/Owner, Agent, Buyer/Tenant — each with tailored UI and permissions</li>
+    <li><strong>Booking System:</strong> Token-based booking with Razorpay payment integration and webhook-confirmed status updates</li>
+    <li><strong>Lease Agreement:</strong> Digital agreement execution via Digio eSign with webhook-based status tracking</li>
+    <li><strong>Admin Moderation:</strong> Approve/reject listings with reasons, view all listings by status</li>
+    <li><strong>Sale vs Rent:</strong> Properties explicitly tagged as FOR_SALE or FOR_RENT with appropriate pricing display</li>
+    <li><strong>Property Media:</strong> Photo gallery with cover photo selection for each listing</li>
+    <li><strong>CRM Integration:</strong> Lead management with enquiry tracking, stages, scores, and follow-up notes</li>
+    <li><strong>Rate Limiting:</strong> Configurable rate limits for enquiries and searches</li>
+  </ul>
+
+  <h3>User Roles</h3>
+  <table>
+    <tr><th>Role</th><th>Capabilities</th><th>Access</th></tr>
+    <tr><td><strong>SUPER_ADMIN</strong></td><td>Approve/reject listings, view all properties, manage users</td><td>Admin panel, full API</td></tr>
+    <tr><td><strong>BUILDER_OWNER</strong></td><td>Create property listings, manage own properties, activate listings</td><td>Create Property form, own listings</td></tr>
+    <tr><td><strong>AGENT</strong></td><td>Create listings (requires KYC), manage assigned properties</td><td>Create Property form, assigned listings</td></tr>
+    <tr><td><strong>BUYER_TENANT</strong></td><td>Search/browse properties, place token bookings, view booking history</td><td>Search, Property detail, My Bookings</td></tr>
+  </table>
+</div>
+
+<!-- 2. ARCHITECTURE -->
+<div class="section page-break" id="architecture">
+  <h1>2. System Architecture</h1>
+  <p>EstateHub follows a three-tier architecture with clear separation of concerns:</p>
+
+  <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────┐
+│                    CLIENT TIER                           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │  React 19    │  │  Swagger UI  │  │  Mobile App  │  │
+│  │  (Vite SPA)  │  │  (springdoc) │  │  (Future)    │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────────┘  │
+│         │ proxy           │ direct                       │
+├─────────┼─────────────────┼─────────────────────────────┤
+│         ▼                 ▼          API TIER            │
+│  ┌──────────────────────────────────────────────┐       │
+│  │           Spring Boot 3.3 (Java 17)          │       │
+│  │  ┌─────────┐ ┌──────────┐ ┌───────────────┐ │       │
+│  │  │  JWT    │ │ Spring   │ │  Controller   │ │       │
+│  │  │  Auth   │ │ Security │ │  Layer (REST) │ │       │
+│  │  │  Filter │ │ RBAC     │ │               │ │       │
+│  │  └─────────┘ └──────────┘ └───────┬───────┘ │       │
+│  │  ┌─────────────────────────────────┼───────┐ │       │
+│  │  │         Service Layer           │       │ │       │
+│  │  │  PropertyService  BookingService│       │ │       │
+│  │  │  AuthService  AdminService      │       │ │       │
+│  │  └─────────────────────────────────┼───────┘ │       │
+│  │  ┌─────────────────────────────────┼───────┐ │       │
+│  │  │      Repository Layer (JPA)     │       │ │       │
+│  │  │  Spring Data JpaSpecificationExecutor    │ │       │
+│  │  └─────────────────────────────────┴───────┘ │       │
+│  └──────────────────────┬───────────────────────┘       │
+├─────────────────────────┼───────────────────────────────┤
+│                         ▼         DATA TIER             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │ PostgreSQL 16│  │   Razorpay   │  │    Digio     │  │
+│  │ Flyway Migr. │  │   Payments   │  │   eSign      │  │
+│  │ Hibernate    │  │   Webhooks   │  │   Webhooks   │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+  </div>
+
+  <h3>Request Flow</h3>
+  <ol>
+    <li><strong>Client Request:</strong> React SPA sends HTTP request with JWT Bearer token to Vite proxy</li>
+    <li><strong>Proxy:</strong> Vite dev server forwards <code>/api/*</code> requests to Spring Boot on port 8080</li>
+    <li><strong>Security Filter:</strong> <code>JwtAuthFilter</code> intercepts request, validates JWT, extracts user ID and role</li>
+    <li><strong>Authorization:</strong> <code>@PreAuthorize</code> annotations check role/ownership permissions</li>
+    <li><strong>Controller:</strong> Validates input (<code>@Valid</code>), delegates to service layer</li>
+    <li><strong>Service:</strong> Business logic, transactions, cross-cutting concerns</li>
+    <li><strong>Repository:</strong> JPA queries via Spring Data + JpaSpecificationExecutor for dynamic search</li>
+    <li><strong>Response:</strong> JSON response returned through the same chain</li>
+  </ol>
+</div>
+
+<!-- 3. TECH STACK -->
+<div class="section page-break" id="tech-stack">
+  <h1>3. Technology Stack</h1>
+
+  <h2>Backend</h2>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+    <tr><td>Runtime</td><td>Java</td><td>17</td><td>LTS runtime</td></tr>
+    <tr><td>Framework</td><td>Spring Boot</td><td>3.3.2</td><td>REST API, auto-configuration</td></tr>
+    <tr><td>Security</td><td>Spring Security</td><td>6.x</td><td>JWT authentication, RBAC</td></tr>
+    <tr><td>ORM</td><td>Hibernate / JPA</td><td>6.x</td><td>Object-relational mapping, schema validation</td></tr>
+    <tr><td>Database</td><td>PostgreSQL</td><td>16</td><td>Primary datastore</td></tr>
+    <tr><td>Migrations</td><td>Flyway</td><td>10.10</td><td>Versioned schema management</td></tr>
+    <tr><td>API Docs</td><td>springdoc-openapi</td><td>2.6.0</td><td>Swagger UI, OpenAPI 3.0</td></tr>
+    <tr><td>Build</td><td>Maven</td><td>3.9+</td><td>Dependency management, packaging</td></tr>
+    <tr><td>Password Hashing</td><td>BCrypt</td><td>—</td><td>Cost factor 12</td></tr>
+    <tr><td>JWT</td><td>io.jsonwebtoken (jjwt)</td><td>—</td><td>HS512 signing</td></tr>
+  </table>
+
+  <h2>Frontend</h2>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+    <tr><td>UI Library</td><td>React</td><td>19</td><td>Component-based UI</td></tr>
+    <tr><td>Build Tool</td><td>Vite</td><td>8</td><td>Dev server, HMR, bundling</td></tr>
+    <tr><td>Routing</td><td>react-router-dom</td><td>7</td><td>Client-side routing</td></tr>
+    <tr><td>HTTP</td><td>Fetch API</td><td>—</td><td>API client with JWT injection</td></tr>
+    <tr><td>State</td><td>React Context</td><td>—</td><td>Auth state management</td></tr>
+    <tr><td>Production</td><td>nginx</td><td>alpine</td><td>Static serving + API proxy</td></tr>
+  </table>
+
+  <h2>Infrastructure</h2>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+    <tr><td>Containerization</td><td>Docker + Docker Compose</td><td>One-command deployment</td></tr>
+    <tr><td>Web Server</td><td>nginx</td><td>Reverse proxy, static files</td></tr>
+    <tr><td>Payments</td><td>Razorpay</td><td>Token booking payments</td></tr>
+    <tr><td>eSign</td><td>Digio</td><td>Digital lease agreements</td></tr>
+  </table>
+</div>
+
+<!-- 4. DATABASE -->
+<div class="section page-break" id="database">
+  <h1>4. Database Design</h1>
+  <p>The schema is managed entirely by Flyway (4 migrations). Hibernate runs in <code>validate</code> mode — it checks entity-to-table mapping but never auto-creates or modifies tables.</p>
+
+  <h2>Entity Relationship Overview</h2>
+  <div class="arch-diagram">
+┌───────────┐     ┌────────────┐     ┌─────────────┐
+│   users   │────<│ properties │>────│property_media│
+│           │     │            │     │             │
+│ user_id PK│     │property_id │     │ media_id PK │
+│ mobile    │     │ owner_id FK│     │property_id FK│
+│ name      │     │ agent_id FK│     │ s3_key      │
+│ role      │     │ title      │     │ alt_text    │
+│ password  │     │ price      │     │ is_cover    │
+│ email     │     │ monthly_rent│    │ media_type  │
+│ kyc_verif │     │ listing_type│    └─────────────┘
+└───────────┘     │ listing_stat│
+                  │ city, state │
+┌───────────┐     └──────┬──────┘
+│ bookings  │            │
+│           │     ┌──────┴──────┐
+│booking_id │     │ property_   │
+│property_id├─>   │ amenities   │
+│ buyer_id  │     │(element coll)│
+│token_amt  │     └─────────────┘
+│ status    │
+│ razorpay_ │     ┌─────────────┐     ┌──────────────┐
+│  order_id │     │ agreements  │     │   enquiries  │
+└───────────┘     │             │     │              │
+                  │ agreement_id│     │ enquiry_id   │
+┌───────────┐     │ property_id │     │ property_id  │
+│ saved_    │     │ tenant_id   │     │ agent_id     │
+│ searches  │     │ type(SALE/  │     │ buyer_name   │
+│           │     │  RENT)      │     │ stage        │
+│ user_id FK│     │ status      │     │ score        │
+│ criteria  │     │ s3_key      │     └──────────────┘
+│ (JSONB)   │     └─────────────┘
+└───────────┘           │
+                  ┌─────┴──────┐
+                  │  crm_notes │
+                  │            │
+                  │ note_id    │
+                  │ enquiry_id │
+                  │ note_text  │
+                  │ stage      │
+                  └────────────┘
+  </div>
+
+  <h2>Key Tables</h2>
+  <table>
+    <tr><th>Table</th><th>Purpose</th><th>Key Columns</th></tr>
+    <tr><td><code>users</code></td><td>All platform users</td><td>user_id (UUID PK), mobile, role, password_hash, kyc_verified</td></tr>
+    <tr><td><code>properties</code></td><td>Property listings</td><td>property_id (UUID PK), owner_id, listing_type (FOR_SALE/FOR_RENT), listing_status, price, monthly_rent</td></tr>
+    <tr><td><code>property_media</code></td><td>Photos/videos per property</td><td>media_id, property_id FK, s3_key (URL), is_cover_photo, display_order</td></tr>
+    <tr><td><code>property_amenities</code></td><td>Amenity tags (element collection)</td><td>property_id FK, amenity (VARCHAR)</td></tr>
+    <tr><td><code>bookings</code></td><td>Token bookings</td><td>booking_id, property_id FK, buyer_id FK, token_amount, status, razorpay_order_id</td></tr>
+    <tr><td><code>agreements</code></td><td>Lease/sale agreements</td><td>agreement_id, property_id FK, type (SALE/RENT), status, s3_key</td></tr>
+    <tr><td><code>enquiries</code></td><td>Buyer enquiries</td><td>enquiry_id, property_id FK, agent_id FK, stage, lead_score</td></tr>
+    <tr><td><code>crm_notes</code></td><td>CRM follow-up notes</td><td>note_id, enquiry_id FK, note_text, stage, score</td></tr>
+    <tr><td><code>saved_searches</code></td><td>Saved search criteria</td><td>search_id, user_id FK, search_criteria (JSONB)</td></tr>
+  </table>
+
+  <h2>Flyway Migrations</h2>
+  <table>
+    <tr><th>Version</th><th>File</th><th>Purpose</th></tr>
+    <tr><td>V1</td><td><code>V1__init_schema.sql</code></td><td>Full schema: all tables, constraints, indexes, pgcrypto extension</td></tr>
+    <tr><td>V2</td><td><code>V2__seed_demo_data.sql</code></td><td>Demo data: 9 users, 14 properties, bookings, enquiries, CRM notes</td></tr>
+    <tr><td>V3</td><td><code>V3__seed_property_media.sql</code></td><td>Property photos: 3 Unsplash images per listing (42 rows)</td></tr>
+    <tr><td>V4</td><td><code>V4__add_listing_type.sql</code></td><td>Adds <code>listing_type</code> column (FOR_SALE/FOR_RENT), back-fills rent properties</td></tr>
+  </table>
+</div>
+
+<!-- 5. AUTH -->
+<div class="section page-break" id="auth">
+  <h1>5. Authentication & Authorization</h1>
+
+  <h2>JWT Authentication Flow</h2>
+  <ol>
+    <li><strong>Register:</strong> <code>POST /api/v1/auth/register</code> — creates user, hashes password (BCrypt cost 12), returns JWT access + refresh tokens</li>
+    <li><strong>Login:</strong> <code>POST /api/v1/auth/login</code> — validates credentials, returns JWT pair</li>
+    <li><strong>Token Structure:</strong> HS512-signed JWT containing <code>uid</code> (UUID), <code>role</code>, <code>sub</code> (mobile), <code>iat</code>, <code>exp</code></li>
+    <li><strong>Access Token:</strong> 1-hour expiry, sent as <code>Authorization: Bearer &lt;token&gt;</code></li>
+    <li><strong>Refresh Token:</strong> 7-day expiry, type="refresh" claim, used to obtain new access tokens</li>
+    <li><strong>Filter Chain:</strong> <code>JwtAuthFilter</code> runs before every request, validates token, sets <code>SecurityContext</code></li>
+  </ol>
+
+  <h2>Authorization Rules</h2>
+  <table>
+    <tr><th>Endpoint Pattern</th><th>Access</th><th>Method</th></tr>
+    <tr><td><code>/api/v1/auth/**</code></td><td>Public</td><td>permitAll</td></tr>
+    <tr><td><code>GET /api/v1/properties/search</code></td><td>Public</td><td>permitAll</td></tr>
+    <tr><td><code>GET /api/v1/properties/{id}</code></td><td>Public</td><td>permitAll</td></tr>
+    <tr><td><code>POST /api/v1/properties</code></td><td>Owner, Agent</td><td>@PreAuthorize("hasAnyRole('BUILDER_OWNER','AGENT')")</td></tr>
+    <tr><td><code>POST /api/v1/bookings</code></td><td>Buyer only</td><td>@PreAuthorize("hasRole('BUYER_TENANT')")</td></tr>
+    <tr><td><code>GET /api/v1/bookings/mine</code></td><td>Buyer only</td><td>@PreAuthorize("hasRole('BUYER_TENANT')")</td></tr>
+    <tr><td><code>GET /api/v1/admin/properties</code></td><td>Admin only</td><td>@PreAuthorize("hasRole('SUPER_ADMIN')")</td></tr>
+    <tr><td><code>PUT /api/v1/admin/properties/{id}/approve</code></td><td>Admin only</td><td>@PreAuthorize("hasRole('SUPER_ADMIN')")</td></tr>
+    <tr><td><code>PUT /api/v1/properties/{id}/activate</code></td><td>Owner/Agent/Admin</td><td>@PreAuthorize + ownership check</td></tr>
+    <tr><td><code>POST /api/v1/razorpay/webhook</code></td><td>Webhook (signature-verified)</td><td>permitAll + HMAC verification</td></tr>
+    <tr><td><code>POST /api/v1/digio/webhook</code></td><td>Webhook (signature-verified)</td><td>permitAll + HMAC verification</td></tr>
+  </table>
+
+  <h2>Ownership Enforcement</h2>
+  <p>Beyond role checks, the service layer enforces ownership:</p>
+  <ul>
+    <li><strong>Booking cancellation:</strong> Only the booking's buyer can cancel</li>
+    <li><strong>Property activation:</strong> Owner/agent may only activate their own listings (unless admin)</li>
+    <li><strong>Booking confirmation:</strong> Only reachable via Razorpay webhook (no public endpoint)</li>
+    <li><strong>Agreement execution:</strong> Only reachable via Digio webhook (no public endpoint)</li>
+  </ul>
+</div>
+
+<!-- 6. API REFERENCE -->
+<div class="section page-break" id="api">
+  <h1>6. REST API Reference</h1>
+  <p>Base URL: <code>http://localhost:8080/api/v1</code></p>
+  <p>Interactive docs: <code>http://localhost:8080/swagger-ui.html</code></p>
+
+  <h2>Authentication</h2>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Body</th><th>Response</th></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/auth/register</code></td><td>{ mobile, name, email, password, role }</td><td>{ accessToken, refreshToken, userId, name, role }</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/auth/login</code></td><td>{ mobile, password }</td><td>{ accessToken, refreshToken, userId, name, role }</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/auth/refresh</code></td><td>{ refreshToken }</td><td>{ accessToken, refreshToken }</td></tr>
+  </table>
+
+  <h2>Properties</h2>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+    <tr><td><span class="badge badge-info">GET</span></td><td><code>/properties/search</code></td><td>Public</td><td>Advanced search with filters: keyword, city, propertyType, listingType, minPrice, maxPrice, possessionStatus, sortBy, page, size</td></tr>
+    <tr><td><span class="badge badge-info">GET</span></td><td><code>/properties/{id}</code></td><td>Public</td><td>Property detail with media, amenities, owner info</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/properties</code></td><td>Owner/Agent</td><td>Create listing (PENDING_APPROVAL). Validates RERA for under-construction.</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/properties/{id}/view</code></td><td>Public</td><td>Increment view counter</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/properties/{id}/activate</code></td><td>Owner/Agent/Admin</td><td>Activate listing (requires 3+ photos)</td></tr>
+  </table>
+
+  <h2>Bookings</h2>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/bookings</code></td><td>Buyer</td><td>Create booking with token amount and optional Razorpay order ID</td></tr>
+    <tr><td><span class="badge badge-info">GET</span></td><td><code>/bookings/mine</code></td><td>Buyer</td><td>List current user's bookings</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/bookings/{id}/cancel</code></td><td>Buyer (owner)</td><td>Cancel pending booking</td></tr>
+  </table>
+
+  <h2>Admin</h2>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+    <tr><td><span class="badge badge-info">GET</span></td><td><code>/admin/properties</code></td><td>Admin</td><td>List properties by status (PENDING_APPROVAL, ACTIVE, REJECTED, etc.)</td></tr>
+    <tr><td><span class="badge badge-warn">PUT</span></td><td><code>/admin/properties/{id}/approve</code></td><td>Admin</td><td>Approve listing → ACTIVE</td></tr>
+    <tr><td><span class="badge badge-warn">PUT</span></td><td><code>/admin/properties/{id}/reject</code></td><td>Admin</td><td>Reject listing with reason</td></tr>
+  </table>
+
+  <h2>Webhooks (Server-to-Server)</h2>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/razorpay/webhook</code></td><td>HMAC-SHA256</td><td>Handles payment.captured → confirms booking, updates property to BOOKED</td></tr>
+    <tr><td><span class="badge badge-ok">POST</span></td><td><code>/digio/webhook</code></td><td>HMAC-SHA256</td><td>Handles agreement signed → updates agreement status to EXECUTED</td></tr>
+  </table>
+
+  <h2>Error Response Format</h2>
+  <p>All errors follow <strong>RFC 7807 Problem Detail</strong>:</p>
+  <pre><code>{
+  "type": "about:blank",
+  "title": "Invalid Credentials",
+  "status": 401,
+  "detail": "Mobile number or password is incorrect.",
+  "instance": "/api/v1/auth/login",
+  "timestamp": "2026-08-28T12:00:00Z",
+  "errors": { "mobile": "must not be blank" }
+}</code></pre>
+</div>
+
+<!-- 7. FRONTEND -->
+<div class="section page-break" id="frontend">
+  <h1>7. Frontend Architecture</h1>
+
+  <h2>File Structure</h2>
+  <pre><code>frontend/
+├── index.html                    # Entry HTML
+├── vite.config.js                # Vite config + API proxy
+├── package.json                  # Dependencies
+└── src/
+    ├── main.jsx                  # ReactDOM.createRoot
+    ├── App.jsx                   # Routes + role-based guards
+    ├── auth.jsx                  # AuthContext (login/register/logout)
+    ├── api.js                    # Fetch client with JWT injection
+    ├── index.css                 # Global styles (dark theme)
+    ├── components/
+    │   ├── NavBar.jsx            # Dynamic nav based on role
+    │   └── PropertyCard.jsx      # Card with photo, badges, pricing
+    └── pages/
+        ├── Login.jsx             # Mobile + password login
+        ├── Register.jsx          # Role-select registration
+        ├── Search.jsx            # Advanced search with filters
+        ├── PropertyDetail.jsx    # Full detail + gallery + booking
+        ├── MyBookings.jsx        # Buyer's booking list + cancel
+        ├── CreateProperty.jsx    # Owner/Agent listing form
+        └── AdminApprovals.jsx    # Admin moderation console</code></pre>
+
+  <h2>Key Patterns</h2>
+  <ul>
+    <li><strong>API Client (<code>api.js</code>):</strong> Wraps <code>fetch()</code>, auto-injects JWT from localStorage, parses RFC 7807 errors</li>
+    <li><strong>Auth Context (<code>auth.jsx</code>):</strong> React Context providing <code>user</code>, <code>login()</code>, <code>register()</code>, <code>logout()</code></li>
+    <li><strong>Route Guards (<code>App.jsx</code>):</strong> <code>RequireRole</code> component redirects unauthorized users</li>
+    <li><strong>Dynamic Navbar:</strong> Shows/hides links based on <code>user.role</code> (Admin, List Property, My Bookings)</li>
+    <li><strong>Proxy:</strong> Vite forwards <code>/api</code> → <code>http://localhost:8080</code> (zero CORS in dev)</li>
+  </ul>
+
+  <h2>Pages Summary</h2>
+  <table>
+    <tr><th>Page</th><th>Route</th><th>Role</th><th>Features</th></tr>
+    <tr><td>Browse</td><td><code>/</code></td><td>Public</td><td>Search filters (keyword, city, type, listing type, price, possession, sort), paginated results, property cards with photos</td></tr>
+    <tr><td>Property Detail</td><td><code>/properties/:id</code></td><td>Public</td><td>Photo gallery, specs table, amenities, price/rent, booking panel (buyers), activate button (owners)</td></tr>
+    <tr><td>Login</td><td><code>/login</code></td><td>Public</td><td>Mobile + password, redirects to home on success</td></tr>
+    <tr><td>Register</td><td><code>/register</code></td><td>Public</td><td>Name, mobile, email, password, role selector (no SUPER_ADMIN)</td></tr>
+    <tr><td>My Bookings</td><td><code>/my-bookings</code></td><td>Buyer</td><td>Booking list, status badges, cancel button, property links</td></tr>
+    <tr><td>List Property</td><td><code>/create-property</code></td><td>Owner/Agent</td><td>Full form: title, type, listing type (sale/rent), BHK, area, price, location, amenities, RERA</td></tr>
+    <tr><td>Admin Console</td><td><code>/admin</code></td><td>Admin</td><td>Status tabs, property table, approve/reject buttons, rejection reason prompt</td></tr>
+  </table>
+</div>
+
+<!-- 8. WEBHOOKS -->
+<div class="section page-break" id="webhooks">
+  <h1>8. Webhook Integrations</h1>
+
+  <h2>Razorpay (Payments)</h2>
+  <p>When a buyer places a booking, a Razorpay order is created. Upon successful payment, Razorpay sends a <code>payment.captured</code> webhook:</p>
+  <ol>
+    <li>Webhook arrives at <code>POST /api/v1/razorpay/webhook</code></li>
+    <li><code>RazorpayWebhookController</code> verifies HMAC-SHA256 signature using <code>RAZORPAY_WEBHOOK_SECRET</code></li>
+    <li>On valid <code>payment.captured</code> event: updates booking status to CONFIRMED, sets property status to BOOKED</li>
+    <li>Generates a booking slip (PDF) and stores reference in S3</li>
+  </ol>
+
+  <h2>Digio (eSign Agreements)</h2>
+  <p>After booking confirmation, a lease/sale agreement is created via Digio. When all parties sign:</p>
+  <ol>
+    <li>Webhook arrives at <code>POST /api/v1/digio/webhook</code></li>
+    <li><code>DigioWebhookController</code> verifies HMAC-SHA256 signature using <code>DIGIO_WEBHOOK_SECRET</code></li>
+    <li>On valid signed event: updates agreement status to EXECUTED, stores signed PDF reference</li>
+  </ol>
+
+  <h2>Security Note</h2>
+  <div class="highlight">
+    <strong>Critical:</strong> Booking confirmation and agreement execution are <strong>only</strong> reachable via webhook endpoints — there are no public confirm/execute API endpoints. This prevents unauthorized status manipulation.
+  </div>
+</div>
+
+<!-- 9. DEPLOYMENT -->
+<div class="section page-break" id="deployment">
+  <h1>9. Deployment</h1>
+
+  <h2>Docker Compose (Recommended)</h2>
+  <pre><code># Quick start
+cp .env.example .env      # Edit: DB_PASSWORD, JWT_SECRET
+docker compose up --build
+
+# Services:
+#   db        → PostgreSQL 16 (port 5432)
+#   backend   → Spring Boot jar (port 8090 for API/Swagger)
+#   frontend  → nginx + React SPA (port 8080 for web app)</code></pre>
+
+  <h2>Docker Architecture</h2>
+  <table>
+    <tr><th>Service</th><th>Image</th><th>Port</th><th>Notes</th></tr>
+    <tr><td><code>db</code></td><td>postgres:16-alpine</td><td>5432</td><td>Healthcheck, persistent volume</td></tr>
+    <tr><td><code>backend</code></td><td>Multi-stage build (Maven + Temurin 17)</td><td>8090</td><td>Waits for healthy DB, Flyway auto-migrates</td></tr>
+    <tr><td><code>frontend</code></td><td>Multi-stage build (Node + nginx alpine)</td><td>8080</td><td>Proxies /api to backend</td></tr>
+  </table>
+
+  <h2>Backend Dockerfile</h2>
+  <pre><code># Stage 1: Build
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn package -DskipTests
+
+# Stage 2: Run
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]</code></pre>
+
+  <h2>Frontend Dockerfile</h2>
+  <pre><code># Stage 1: Build
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80</code></pre>
+
+  <h2>Environment Variables</h2>
+  <table>
+    <tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
+    <tr><td><code>DB_URL</code></td><td>jdbc:postgresql://localhost:5432/estatehub</td><td>Database connection</td></tr>
+    <tr><td><code>DB_USERNAME</code></td><td>estatehub_user</td><td>Database user</td></tr>
+    <tr><td><code>DB_PASSWORD</code></td><td>changeme</td><td>Database password</td></tr>
+    <tr><td><code>JWT_SECRET</code></td><td>(must set)</td><td>HS512 signing key (≥64 bytes)</td></tr>
+    <tr><td><code>RAZORPAY_KEY_ID</code></td><td>(empty)</td><td>Razorpay API key</td></tr>
+    <tr><td><code>RAZORPAY_KEY_SECRET</code></td><td>(empty)</td><td>Razorpay API secret</td></tr>
+    <tr><td><code>RAZORPAY_WEBHOOK_SECRET</code></td><td>(empty)</td><td>Webhook signature verification</td></tr>
+    <tr><td><code>DIGIO_API_KEY</code></td><td>(empty)</td><td>Digio API key</td></tr>
+    <tr><td><code>DIGIO_API_SECRET</code></td><td>(empty)</td><td>Digio API secret</td></tr>
+    <tr><td><code>DIGIO_WEBHOOK_SECRET</code></td><td>(empty)</td><td>Webhook signature verification</td></tr>
+    <tr><td><code>CORS_ORIGINS</code></td><td>http://localhost:8081,...</td><td>Allowed browser origins</td></tr>
+  </table>
+</div>
+
+<!-- 10. TESTING -->
+<div class="section page-break" id="testing">
+  <h1>10. Testing Strategy</h1>
+
+  <h2>Test Suite Overview</h2>
+  <p><strong>25 integration tests</strong> running against H2 in-memory database with full Spring context and security chain.</p>
+
+  <table>
+    <tr><th>Test Class</th><th>Tests</th><th>Coverage</th></tr>
+    <tr><td><code>AuthIntegrationTest</code></td><td>6</td><td>Register, login, role validation, duplicate mobile, invalid credentials</td></tr>
+    <tr><td><code>BookingIntegrationTest</code></td><td>5</td><td>Create booking, cancel, buyer-only access, ownership check</td></tr>
+    <tr><td><code>PropertyListingIntegrationTest</code></td><td>8</td><td>Create listing, search filters, activation, RERA validation, listing type</td></tr>
+    <tr><td><code>RazorpayWebhookIntegrationTest</code></td><td>2</td><td>Payment captured → booking confirmed, signature verification</td></tr>
+    <tr><td><code>DigioWebhookIntegrationTest</code></td><td>2</td><td>Agreement signed → executed, signature verification</td></tr>
+    <tr><td><code>EndpointSmokeTest</code></td><td>2</td><td>Bookings/mine (buyer), admin/properties (admin) endpoint accessibility</td></tr>
+  </table>
+
+  <h2>Running Tests</h2>
+  <pre><code># Full suite (H2, ~10 seconds)
+mvn test
+
+# Specific test
+mvn test -Dtest=AuthIntegrationTest
+
+# Real PostgreSQL verification (embedded PG 16 via zonky)
+mvn test -Dtest=PostgresSmokeIT</code></pre>
+
+  <h2>Test Infrastructure</h2>
+  <ul>
+    <li><code>BaseIntegrationTest</code> — loads full Spring context with H2, test security config</li>
+    <li>MockMvc for HTTP layer testing without starting a server</li>
+    <li>Test profile (<code>application-test.yml</code>) uses H2 in-memory with Flyway enabled</li>
+    <li>PostgresSmokeIT downloads embedded PostgreSQL binaries for true PG validation</li>
+  </ul>
+</div>
+
+<!-- 11. SECURITY -->
+<div class="section page-break" id="security">
+  <h1>11. Security</h1>
+
+  <h2>Security Measures</h2>
+  <table>
+    <tr><th>Layer</th><th>Measure</th><th>Details</th></tr>
+    <tr><td>Authentication</td><td>JWT (HS512)</td><td>1-hour access tokens, 7-day refresh tokens, stateless</td></tr>
+    <tr><td>Password Storage</td><td>BCrypt (cost 12)</td><td>One-way hashing, never stored in plain text</td></tr>
+    <tr><td>Authorization</td><td>RBAC + Ownership</td><td>Role-based endpoint access + service-level ownership verification</td></tr>
+    <tr><td>Webhook Security</td><td>HMAC-SHA256</td><td>Razorpay and Digio webhooks verified before processing</td></tr>
+    <tr><td>CORS</td><td>Origin whitelist</td><td>Only configured origins can make browser requests</td></tr>
+    <tr><td>Input Validation</td><td>@Valid + @NotBlank</td><td>Bean validation on all request bodies</td></tr>
+    <tr><td>Schema Safety</td><td>ddl-auto: validate</td><td>Hibernate never modifies schema; Flyway owns DDL</td></tr>
+    <tr><td>Session</td><td>STATELESS</td><td>No server-side sessions; all state in JWT</td></tr>
+    <tr><td>CSRF</td><td>Disabled</td><td>Stateless API — JWT tokens prevent CSRF by design</td></tr>
+    <tr><td>Rate Limiting</td><td>Configurable</td><td>Enquiry: 5/hour, Search: 100/minute (configurable via properties)</td></tr>
+  </table>
+
+  <h2>Registration Restrictions</h2>
+  <ul>
+    <li>SUPER_ADMIN <strong>cannot</strong> self-register — must be seeded or created via migration</li>
+    <li>Only BUYER_TENANT, BUILDER_OWNER, and AGENT roles are available at registration</li>
+    <li>Agents require KYC verification before creating listings</li>
+  </ul>
+</div>
+
+<!-- 12. SEED DATA -->
+<div class="section page-break" id="seed-data">
+  <h1>12. Seed Data & Demo Accounts</h1>
+
+  <h2>Demo Users (password: <code>Demo@1234</code>)</h2>
+  <table>
+    <tr><th>Role</th><th>Phone</th><th>Name</th><th>Notes</th></tr>
+    <tr><td>SUPER_ADMIN</td><td>9000000001</td><td>Demo Admin</td><td>Full admin access</td></tr>
+    <tr><td>BUILDER_OWNER</td><td>9000000011</td><td>Skyline Developers</td><td>3 properties listed</td></tr>
+    <tr><td>BUILDER_OWNER</td><td>9000000012</td><td>GreenValley Estates</td><td>4 properties listed</td></tr>
+    <tr><td>BUILDER_OWNER</td><td>9000000013</td><td>Imperial Homes</td><td>3 properties listed</td></tr>
+    <tr><td>AGENT</td><td>9000000021</td><td>Rohan Kapoor</td><td>Assigned to 5 properties</td></tr>
+    <tr><td>AGENT</td><td>9000000022</td><td>Meera Nair</td><td>Assigned to 3 properties</td></tr>
+    <tr><td>BUYER_TENANT</td><td>9000000031</td><td>Amit Verma</td><td>Has 1 confirmed booking</td></tr>
+    <tr><td>BUYER_TENANT</td><td>9000000032</td><td>Kavya Iyer</td><td>—</td></tr>
+    <tr><td>BUYER_TENANT</td><td>9000000033</td><td>Vikram Singh</td><td>—</td></tr>
+  </table>
+
+  <h2>Seeded Properties</h2>
+  <table>
+    <tr><th>Title</th><th>City</th><th>Type</th><th>Listing</th><th>Status</th><th>Price</th></tr>
+    <tr><td>Skyline 3BHK Apartment</td><td>Bengaluru</td><td>APARTMENT</td><td>FOR_SALE</td><td>ACTIVE</td><td>₹1,25,00,000</td></tr>
+    <tr><td>Green Valley Villa</td><td>Hyderabad</td><td>VILLA</td><td>FOR_SALE</td><td>ACTIVE</td><td>₹3,50,00,000</td></tr>
+    <tr><td>Palm Grove 3BHK</td><td>Mumbai</td><td>APARTMENT</td><td>FOR_SALE</td><td>ACTIVE</td><td>₹2,85,00,000</td></tr>
+    <tr><td>Lotus Residency 2BHK</td><td>Chennai</td><td>APARTMENT</td><td>FOR_RENT</td><td>ACTIVE</td><td>₹25,000/mo</td></tr>
+    <tr><td>Imperial Heights 3BHK</td><td>Delhi</td><td>APARTMENT</td><td>FOR_SALE</td><td>ACTIVE</td><td>₹3,20,00,000</td></tr>
+    <tr><td>Cedar Court House</td><td>Jaipur</td><td>INDEPENDENT</td><td>FOR_SALE</td><td>ACTIVE</td><td>₹1,45,00,000</td></tr>
+    <tr><td>Marina Bay Office</td><td>Mumbai</td><td>OFFICE</td><td>FOR_RENT</td><td>ACTIVE</td><td>₹2,50,000/mo</td></tr>
+    <tr><td>Corner Shop Retail</td><td>Hyderabad</td><td>RETAIL</td><td>FOR_RENT</td><td>ACTIVE</td><td>₹45,000/mo</td></tr>
+    <tr><td>Happy Homes 1BHK</td><td>Kolkata</td><td>APARTMENT</td><td>FOR_RENT</td><td>ACTIVE</td><td>₹12,000/mo</td></tr>
+    <tr><td>Metro Warehouse</td><td>Pune</td><td>WAREHOUSE</td><td>FOR_SALE</td><td>ACTIVE</td><td>₹4,20,00,000</td></tr>
+    <tr><td>Sunrise 2BHK</td><td>Pune</td><td>APARTMENT</td><td>FOR_SALE</td><td>PENDING</td><td>₹65,00,000</td></tr>
+    <tr><td>Hillcrest Plot</td><td>Bengaluru</td><td>PLOT</td><td>FOR_SALE</td><td>PENDING</td><td>₹2,20,00,000</td></tr>
+    <tr><td>Old Bungalow</td><td>Chennai</td><td>INDEPENDENT</td><td>FOR_SALE</td><td>REJECTED</td><td>₹4,80,00,000</td></tr>
+    <tr><td>Booked Skyline 2BHK</td><td>Bengaluru</td><td>APARTMENT</td><td>FOR_SALE</td><td>BOOKED</td><td>₹1,15,00,000</td></tr>
+  </table>
+
+  <h3>Photo Sources</h3>
+  <p>All 42 property photos are sourced from <strong>Unsplash</strong> (free, no attribution required). Each property has 3 photos: 1 cover + 2 gallery images. Photos are matched to property type (apartments show interiors, warehouses show industrial spaces, plots show greenery, etc.).</p>
+</div>
+
+<!-- 13. CONFIGURATION -->
+<div class="section page-break" id="config">
+  <h1>13. Configuration</h1>
+
+  <h2>Profiles</h2>
+  <table>
+    <tr><th>Profile</th><th>Database</th><th>Purpose</th></tr>
+    <tr><td><code>default</code></td><td>PostgreSQL (real)</td><td>Production/local with Flyway + Hibernate validate</td></tr>
+    <tr><td><code>devdemo</code></td><td>PostgreSQL (real)</td><td>Same as default + DevDataSeeder creates demo data</td></tr>
+    <tr><td><code>test</code></td><td>H2 in-memory</td><td>Integration tests with Flyway on H2</td></tr>
+  </table>
+
+  <h2>Key Configuration Properties</h2>
+  <pre><code># application.yml (defaults)
+spring.datasource.url: jdbc:postgresql://localhost:5432/estatehub
+spring.jpa.hibernate.ddl-auto: validate
+spring.flyway.baseline-on-migrate: true
+spring.flyway.repair-on-migrate: true
+
+jwt.secret: ${JWT_SECRET}
+jwt.access-token-expiry-ms: 3600000      # 1 hour
+jwt.refresh-token-expiry-ms: 604800000   # 7 days
+
+platform.enquiry-rate-limit-per-hour: 5
+platform.search-rate-limit-per-minute: 100
+platform.tds-threshold-monthly-rent: 50000
+platform.tds-rate-percent: 10</code></pre>
+</div>
+
+<!-- 14. FUTURE -->
+<div class="section page-break" id="future">
+  <h1>14. Future Enhancements</h1>
+
+  <table>
+    <tr><th>Feature</th><th>Priority</th><th>Description</th></tr>
+    <tr><td>Photo Upload API</td><td><span class="badge badge-warn">High</span></td><td><code>POST /properties/{id}/media</code> for owners to upload real photos (S3 integration)</td></tr>
+    <tr><td>Payment Integration</td><td><span class="badge badge-warn">High</span></td><td>Full Razorpay checkout flow with order creation and payment verification</td></tr>
+    <tr><td>Agreement Generation</td><td><span class="badge badge-info">Medium</span></td><td>Automated lease/sale agreement PDF generation with Digio eSign</td></tr>
+    <tr><td>TDS Calculator</td><td><span class="badge badge-info">Medium</span></td><td>API endpoint for rental TDS calculation (₹50K threshold, 10% rate)</td></tr>
+    <tr><td>Saved Searches</td><td><span class="badge badge-info">Medium</span></td><td>Store search criteria as JSONB, notify on new matching properties</td></tr>
+    <tr><td>SMS Notifications</td><td><span class="badge badge-info">Medium</span></td><td>Twilio integration for booking confirmations and status updates</td></tr>
+    <tr><td>Google Maps</td><td><span class="badge badge-ok">Low</span></td><td>Property location map, nearby amenities, distance calculations</td></tr>
+    <tr><td>TypeScript Migration</td><td><span class="badge badge-ok">Low</span></td><td>Convert React frontend to TypeScript for better type safety</td></tr>
+    <tr><td>Tailwind CSS</td><td><span class="badge badge-ok">Low</span></td><td>Replace custom CSS with utility-first framework</td></tr>
+    <tr><td>E2E Tests</td><td><span class="badge badge-ok">Low</span></td><td>Cypress or Playwright tests for critical user flows</td></tr>
+  </table>
+
+  <div class="note" style="margin-top:30px;">
+    <strong>Document generated:</strong> August 28, 2026<br>
+    <strong>Repository:</strong> github.com/Boomesh405/ad<br>
+    <strong>Branch:</strong> main (3 commits: backend, frontend, deploy stack)
+  </div>
+</div>
+
+</body>
+</html>

@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface PropertyDocumentRepository extends JpaRepository<PropertyDocument, UUID> {
     List<PropertyDocument> findByPropertyId(UUID propertyId);
+    List<PropertyDocument> findByPropertyIdOrderByCreatedAtAsc(UUID propertyId);
+    long countByPropertyId(UUID propertyId);
 }

@@ -25,7 +25,7 @@ export function clearSession() {
   localStorage.removeItem(USER_KEY);
 }
 
-export async function api(path, { method = "GET", body, auth = true, params } = {}) {
+export async function api(path, { method = "GET", body, auth = true, params, isFormData = false } = {}) {
   let url = "/api/v1" + path;
   if (params) {
     const qs = new URLSearchParams();
@@ -37,7 +37,8 @@ export async function api(path, { method = "GET", body, auth = true, params } = 
   }
 
   const headers = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  // For FormData, the browser sets Content-Type automatically with the boundary
+  if (body !== undefined && !isFormData) headers["Content-Type"] = "application/json";
   if (auth) {
     const token = getToken();
     if (token) headers["Authorization"] = "Bearer " + token;
@@ -46,7 +47,7 @@ export async function api(path, { method = "GET", body, auth = true, params } = 
   const res = await fetch(url, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
   });
 
   if (res.status === 204) return null;

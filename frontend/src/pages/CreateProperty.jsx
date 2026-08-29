@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api.js";
+import DragDropUpload from "../components/DragDropUpload.jsx";
 
 const PROPERTY_TYPES = [
   "APARTMENT",
@@ -12,10 +13,12 @@ const PROPERTY_TYPES = [
   "WAREHOUSE",
 ];
 const POSSESSION = ["READY_TO_MOVE", "UNDER_CONSTRUCTION"];
+const LISTING_TYPES = ["FOR_SALE", "FOR_RENT"];
 
 const empty = {
   title: "",
   propertyType: "APARTMENT",
+  listingType: "FOR_SALE",
   bhkConfig: "",
   carpetAreaSqft: "",
   builtUpAreaSqft: "",
@@ -40,6 +43,7 @@ export default function CreateProperty() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [createdProperty, setCreatedProperty] = useState(null);
 
   const set = (k) => (e) => {
     const v = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -55,6 +59,7 @@ export default function CreateProperty() {
       const body = {
         title: form.title,
         propertyType: form.propertyType,
+        listingType: form.listingType,
         bhkConfig: form.bhkConfig || null,
         carpetAreaSqft: parseFloat(form.carpetAreaSqft),
         builtUpAreaSqft: form.builtUpAreaSqft ? parseFloat(form.builtUpAreaSqft) : null,
@@ -76,9 +81,10 @@ export default function CreateProperty() {
         possessionStatus: form.possessionStatus,
       };
       const created = await api("/properties", { method: "POST", body });
+      setCreatedProperty(created);
       setNotice({
         kind: "ok",
-        text: `Listing created with ID ${created.propertyId}. Status: ${created.listingStatus} — it will appear on the site once an admin approves it.`,
+        text: `Listing created with ID ${created.propertyId.slice(0, 8)}. Status: ${created.listingStatus}.`,
       });
       setForm(empty);
     } catch (err) {
@@ -97,6 +103,7 @@ export default function CreateProperty() {
       {error && <div className="alert error">{error}</div>}
       {notice && <div className="alert ok">{notice.text}</div>}
 
+      {/* Property creation form */}
       <form className="card form-grid" onSubmit={submit}>
         <label className="span2">
           Title *
@@ -107,6 +114,14 @@ export default function CreateProperty() {
           <select value={form.propertyType} onChange={set("propertyType")}>
             {PROPERTY_TYPES.map((t) => (
               <option key={t} value={t}>{t.replace("_", " ")}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Listing type *
+          <select value={form.listingType} onChange={set("listingType")}>
+            {LISTING_TYPES.map((t) => (
+              <option key={t} value={t}>{t === "FOR_SALE" ? "For Sale" : "For Rent"}</option>
             ))}
           </select>
         </label>
@@ -186,7 +201,22 @@ export default function CreateProperty() {
           {busy ? "Submitting…" : "Submit for approval"}
         </button>
       </form>
-      <p className="muted small">
+
+      {/* Document upload — shows after property is created */}
+      {createdProperty && (
+        <div className="card doc-section" style={{ marginTop: 24 }}>
+          <h2>Upload Property Documents</h2>
+          <p className="muted small">
+            Drag & drop files below or click to browse. Documents will be reviewed by an admin.
+          </p>
+          <DragDropUpload
+            propertyId={createdProperty.propertyId}
+            onUploaded={(files) => setNotice({ kind: "ok", text: `${files.length} document(s) uploaded successfully!` })}
+          />
+        </div>
+      )}
+
+      <p className="muted small" style={{ marginTop: 16 }}>
         <Link to="/">← Back to search</Link>
       </p>
     </div>

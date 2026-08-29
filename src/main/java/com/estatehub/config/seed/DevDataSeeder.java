@@ -4,16 +4,19 @@ import com.estatehub.entity.Booking;
 import com.estatehub.entity.CrmNote;
 import com.estatehub.entity.Enquiry;
 import com.estatehub.entity.Property;
+import com.estatehub.entity.PropertyMedia;
 import com.estatehub.entity.User;
 import com.estatehub.entity.enums.BookingStatus;
 import com.estatehub.entity.enums.LeadStage;
 import com.estatehub.entity.enums.ListingStatus;
+import com.estatehub.entity.enums.MediaType;
 import com.estatehub.entity.enums.PossessionStatus;
 import com.estatehub.entity.enums.PropertyType;
 import com.estatehub.entity.enums.Role;
 import com.estatehub.repository.BookingRepository;
 import com.estatehub.repository.CrmNoteRepository;
 import com.estatehub.repository.EnquiryRepository;
+import com.estatehub.repository.PropertyMediaRepository;
 import com.estatehub.repository.PropertyRepository;
 import com.estatehub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +28,11 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.AbstractMap.SimpleEntry;
 
 /**
  * Demo data for local development / the frontend preview. Active only with the
@@ -45,6 +51,7 @@ public class DevDataSeeder implements CommandLineRunner {
     private final BookingRepository bookingRepository;
     private final EnquiryRepository enquiryRepository;
     private final CrmNoteRepository crmNoteRepository;
+    private final PropertyMediaRepository propertyMediaRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -104,8 +111,18 @@ public class DevDataSeeder implements CommandLineRunner {
                 "Bengaluru", "Karnataka", "560095", 1100, 11500000L, PossessionStatus.READY_TO_MOVE, ListingStatus.BOOKED, null,
                 "Car parking", "Lift", "Gym");
 
-        propertyRepository.saveAll(List.of(skyline, villa, sunrise, palm, lotus, imperial, cedar,
-                marina, cornerShop, happy, metro, plot, bungalow, booked));
+        // Mark some properties as FOR_RENT with monthly rent amounts
+        lotus.setMonthlyRent(BigDecimal.valueOf(25000));
+        lotus.setListingType(com.estatehub.entity.enums.ListingType.FOR_RENT);
+        happy.setMonthlyRent(BigDecimal.valueOf(12000));
+        happy.setListingType(com.estatehub.entity.enums.ListingType.FOR_RENT);
+        cornerShop.setMonthlyRent(BigDecimal.valueOf(35000));
+        cornerShop.setListingType(com.estatehub.entity.enums.ListingType.FOR_RENT);
+
+        List<Property> listings = List.of(skyline, villa, sunrise, palm, lotus, imperial, cedar,
+                marina, cornerShop, happy, metro, plot, bungalow, booked);
+        propertyRepository.saveAll(listings);
+        seedMedia(listings);
 
         bookingRepository.saveAll(List.of(
                 Booking.builder().propertyId(booked.getPropertyId()).buyerId(buyer1.getUserId())
@@ -188,5 +205,87 @@ public class DevDataSeeder implements CommandLineRunner {
                 .followUpDate(followUp)
                 .followUpMode("CALL")
                 .build();
+    }
+
+    /** Three real building photos per listing from Unsplash (free, no attribution). */
+    private void seedMedia(List<Property> listings) {
+        // Map property titles to curated Unsplash photo sets (cover + 2 gallery)
+        Map<String, String[]> photoMap = new java.util.HashMap<>();
+        photoMap.put("Skyline 3BHK Apartment", new String[]{
+            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop"});
+        photoMap.put("Green Valley Villa", new String[]{
+            "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop"});
+        photoMap.put("Sunrise 2BHK", new String[]{
+            "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop"});
+        photoMap.put("Palm Grove 3BHK", new String[]{
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=800&h=600&fit=crop"});
+        photoMap.put("Lotus Residency 2BHK", new String[]{
+            "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop"});
+        photoMap.put("Imperial Heights 3BHK", new String[]{
+            "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&h=600&fit=crop"});
+        photoMap.put("Cedar Court Independent House", new String[]{
+            "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800&h=600&fit=crop"});
+        photoMap.put("Marina Bay Office Tower", new String[]{
+            "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1562664377-e4c8a4e4c8c7?w=800&h=600&fit=crop"});
+        photoMap.put("Corner Shop Retail", new String[]{
+            "https://images.unsplash.com/photo-1555636222-cae831e670b3?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop"});
+        photoMap.put("Happy Homes 1BHK", new String[]{
+            "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&h=600&fit=crop"});
+        photoMap.put("Metro Logistics Warehouse", new String[]{
+            "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1565891741441-64926e441838?w=800&h=600&fit=crop"});
+        photoMap.put("Hillcrest Garden Plot", new String[]{
+            "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop"});
+        photoMap.put("Old Bungalow Duplex", new String[]{
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop"});
+        photoMap.put("Booked Skyline 2BHK", new String[]{
+            "https://images.unsplash.com/photo-1600566752229-250ed79470f0?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&h=600&fit=crop"});
+
+        List<PropertyMedia> media = new ArrayList<>();
+        for (Property p : listings) {
+            String[] urls = photoMap.getOrDefault(p.getTitle(), new String[]{
+                "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop"
+            });
+            for (int i = 0; i < 3; i++) {
+                media.add(PropertyMedia.builder()
+                        .propertyId(p.getPropertyId())
+                        .mediaType(MediaType.PHOTO)
+                        .s3Key(urls[i])
+                        .altText(p.getTitle() + " photo " + (i + 1))
+                        .coverPhoto(i == 0)
+                        .displayOrder(i)
+                        .build());
+            }
+        }
+        propertyMediaRepository.saveAll(media);
     }
 }
