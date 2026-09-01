@@ -72,7 +72,7 @@ function EMICalculator() {
         <div className="spec-card-item">
           <div className="spec-card-icon">💵</div>
           <div className="spec-card-label">Loan Amount</div>
-          <div className="spec-card-value">{money(principal)}</div>
+          <div className="spec-card-value">{money(calc.principal)}</div>
         </div>
         <div className="spec-card-item">
           <div className="spec-card-icon">📊</div>
