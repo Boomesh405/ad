@@ -20,19 +20,29 @@ export default function NavBar() {
         </Link>
         <nav className="nav-links">
           <Link to="/">Browse</Link>
+          <Link to="/saved">♡ Saved</Link>
+          <Link to="/calculator">💰 Calculator</Link>
           {user?.role === "BUYER_TENANT" && <Link to="/my-bookings">My Bookings</Link>}
           {(user?.role === "BUILDER_OWNER" || user?.role === "AGENT") && (
-            <Link to="/create-property">List Property</Link>
+            <>
+              <Link to="/create-property">List Property</Link>
+              <Link to="/owner-dashboard">Dashboard</Link>
+            </>
           )}
-          {user?.role === "SUPER_ADMIN" && <Link to="/admin">Admin</Link>}
+          {user?.role === "SUPER_ADMIN" && (
+            <>
+              <Link to="/admin">Admin</Link>
+              <Link to="/admin-dashboard">Dashboard</Link>
+            </>
+          )}
         </nav>
         <div className="nav-user">
           {user ? (
             <>
-              <div className="user-chip">
+              <Link to="/profile" className="user-chip" style={{ textDecoration: "none" }}>
                 <span className="role-dot" style={{ background: ROLE_COLORS[user.role] || "var(--ok)" }} />
                 {user.name}
-              </div>
+              </Link>
               <button
                 className="btn ghost small"
                 onClick={() => { logout(); nav("/"); }}
