@@ -1,6 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 
+const ROLE_COLORS = {
+  SUPER_ADMIN: "#e5534b",
+  BUILDER_OWNER: "#2fbf71",
+  AGENT: "#4facfe",
+  BUYER_TENANT: "#e8b34b",
+};
+
 export default function NavBar() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
@@ -22,27 +29,21 @@ export default function NavBar() {
         <div className="nav-user">
           {user ? (
             <>
-              <span className="chip">
-                {user.name} · {user.role.replace("_", " ")}
-              </span>
+              <div className="user-chip">
+                <span className="role-dot" style={{ background: ROLE_COLORS[user.role] || "var(--ok)" }} />
+                {user.name}
+              </div>
               <button
-                className="btn ghost"
-                onClick={() => {
-                  logout();
-                  nav("/");
-                }}
+                className="btn ghost small"
+                onClick={() => { logout(); nav("/"); }}
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="btn ghost">
-                Login
-              </Link>
-              <Link to="/register" className="btn">
-                Sign up
-              </Link>
+              <Link to="/login" className="btn ghost small">Login</Link>
+              <Link to="/register" className="btn small">Sign up</Link>
             </>
           )}
         </div>
