@@ -9,7 +9,8 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     api("/admin/properties?size=200").then((data) => {
-      const mine = (data.content || []).filter((p) => p.ownerId);
+      const all = Array.isArray(data) ? data : (data.content || []);
+      const mine = all.filter((p) => p.ownerId);
       setListings(mine);
       setLoading(false);
     }).catch(() => setLoading(false));

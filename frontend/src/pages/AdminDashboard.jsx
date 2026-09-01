@@ -8,10 +8,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     Promise.all([
-      api("/admin/properties?size=200").catch(() => ({ content: [], totalElements: 0 })),
+      api("/admin/properties?size=200").catch(() => []),
       api("/analytics/inventory").catch(() => ({})),
     ]).then(([props, inv]) => {
-      const all = props.content || [];
+      const all = Array.isArray(props) ? props : (props.content || []);
       const byStatus = {};
       const byType = {};
       const byCity = {};
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
         if (p.city) byCity[p.city] = (byCity[p.city] || 0) + 1;
       });
       setStats({
-        total: props.totalElements || all.length,
+        total: all.length,
         byStatus,
         byType,
         byCity,
