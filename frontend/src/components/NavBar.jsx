@@ -2,10 +2,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 
 const ROLE_COLORS = {
-  SUPER_ADMIN: "#e5534b",
-  BUILDER_OWNER: "#2fbf71",
-  AGENT: "#4facfe",
-  BUYER_TENANT: "#e8b34b",
+  SUPER_ADMIN: "#f87171",
+  BUILDER_OWNER: "#34d399",
+  AGENT: "#60a5fa",
+  BUYER_TENANT: "#f0b429",
 };
 
 export default function NavBar() {

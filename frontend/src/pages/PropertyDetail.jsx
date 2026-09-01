@@ -13,6 +13,17 @@ const DOC_LABELS = {
 
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop";
 
+function openMap(address, city, state, pincode, landmark) {
+  const parts = [address, city, state, pincode, landmark ? "near " + landmark : null];
+  const full = parts.filter(Boolean).join(", ");
+  const encoded = encodeURIComponent(full);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const url = isIOS
+    ? `https://maps.apple.com/?q=${encoded}`
+    : `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 export default function PropertyDetail() {
   const { id } = useParams();
   const [p, setP] = useState(null);
@@ -158,6 +169,27 @@ export default function PropertyDetail() {
           <img src={FALLBACK_IMG} alt={p.title} className="gallery-img cover" />
         </div>
       )}
+
+      {/* Map Section */}
+      <div className="map-section">
+        <h3>📍 Property Location</h3>
+        <div className="map-placeholder">
+          <div className="map-pin">📍</div>
+          <div className="map-address">
+            {p.address ? p.address + " · " : ""}
+            {p.city}{p.state ? ", " + p.state : ""}
+            {p.pincode ? " · " + p.pincode : ""}
+          </div>
+          {p.landmark && <div className="map-hint">Near: {p.landmark}</div>}
+          <button
+            className="btn map-btn"
+            onClick={() => openMap(p.address, p.city, p.state, p.pincode, p.landmark)}
+          >
+            🗺 Open in Google Maps
+          </button>
+          <div className="map-hint">Opens in your default map app (Google Maps / Apple Maps)</div>
+        </div>
+      </div>
 
       <div className="detail-grid">
         {/* Left: specs + amenities + documents */}
